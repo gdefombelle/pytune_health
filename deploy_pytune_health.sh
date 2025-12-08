@@ -34,8 +34,10 @@ docker pull ${IMAGE_NAME} && \
 docker run -d --name pytune_health \
   --network pytune_network \
   -p 8010:8010 \
+  --env-file /home/gabriel/pytune.env \
+  -e DOCKERIZED=1 \
   --restart always \
-  ${IMAGE_NAME} && \
+  ${IMAGE_NAME}
 
 docker restart pytune-nginx
 "
