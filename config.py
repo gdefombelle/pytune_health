@@ -24,6 +24,22 @@ POSTGRES_DSN = (
     f"@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
+# ---------- RabbitMQ ----------
+# RabbitMQ
+RABBIT_HOST = os.getenv("RABBIT_HOST", "rabbitmq")
+RABBIT_PORT = int(os.getenv("RABBIT_PORT", "5672"))
+RABBIT_USER = os.getenv("RABBIT_USER", "admin")
+RABBIT_PASSWORD = os.getenv("RABBIT_PASSWORD", "MyStr0ngP@ss2024!")
+
+
+# ---------- Qdrant ----------
+QDRANT_URL = os.getenv("QDRANT_URL","http://195.201.9.184:6333") 
+
+# ---------- MinIO ----------
+MINIO_HOST = os.getenv("MINIO_HOST", "minio")
+MINIO_PORT = int(os.getenv("MINIO_PORT", "9000"))
+MINIO_URL = os.getenv("MINIO_URL") or f"http://{MINIO_HOST}:{MINIO_PORT}"
+
 # ---------- Mode Docker ou pas ----------
 DOCKERIZED = os.getenv("DOCKERIZED", "0") == "1"
 
@@ -39,6 +55,7 @@ if DOCKERIZED:
         "diagnosis": "http://pytune_diagnosis:8008",
         "storage":   "http://pytune_storage:8005",
         "llm_proxy": "http://pytune_llm_proxy:8007",
+        "pkce": "http://pytune_pkce:8004",
         "web":       "http://pytune_web:3000",
     }
 else:
@@ -53,5 +70,6 @@ else:
         "diagnosis": os.getenv("SERVICE_DIAG_URL",   "https://diagnosis.pytune.com"),
         "storage": os.getenv("SERVICE_STORAGE_URL",  "https://storage.pytune.com"),
         "llm_proxy": os.getenv("SERVICE_LLM_URL",    "https://llm.pytune.com"),
+        "pkce": os.getenv("SERVICE_LLM_URL",    "https://pkce.pytune.com"),
         "web": os.getenv("SERVICE_WEB_URL",          "https://pytune.com"),
     }

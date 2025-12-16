@@ -14,7 +14,8 @@ RUN pip install --no-cache-dir \
     aiohttp \
     asyncpg \
     "redis[hiredis]" \
-    python-dotenv
+    python-dotenv \
+    aio-pika
 
 # Copier le code
 COPY . .
