@@ -100,6 +100,23 @@ async def check_minio(session: aiohttp.ClientSession, url: str):
             }
     except Exception as e:
         return {"ok": False, "error": str(e)}
+    
+# 🧠 Ollama (optionnel)
+async def check_ollama(session: aiohttp.ClientSession, url: str):
+    if not url:
+        return {"ok": False, "error": "OLLAMA_URL not configured"}
+
+    try:
+        start = time.perf_counter()
+        async with session.get(f"{url}/api/tags", timeout=2) as res:
+            rtt = (time.perf_counter() - start) * 1000
+            return {
+                "ok": res.status == 200,
+                "status": res.status,
+                "rtt": round(rtt, 2),
+            }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
 
 
 # 🌐 Microservices HTTP
@@ -120,12 +137,12 @@ async def check_http_service(name: str, url: str, session: aiohttp.ClientSession
 
 # 🖥️ System info
 def check_system():
-    load1 = load5 = load15 = 0.0
-    try:
-        import os
-        load1, load5, load15 = os.getloadavg()
-    except Exception:
-        pass
+    import os, socket, psutil
+
+    load1, load5, load15 = os.getloadavg()
+
+    mem = psutil.virtual_memory()
+    disk = psutil.disk_usage("/")
 
     return {
         "hostname": socket.gethostname(),
@@ -133,5 +150,19 @@ def check_system():
             "1m": round(load1, 2),
             "5m": round(load5, 2),
             "15m": round(load15, 2),
+        },
+        "cpu": {
+            "percent": psutil.cpu_percent(interval=0.1),
+            "cores": psutil.cpu_count(),
+        },
+        "memory": {
+            "percent": round(mem.percent, 1),
+            "used_gb": round(mem.used / 1024**3, 1),
+            "total_gb": round(mem.total / 1024**3, 1),
+        },
+        "disk": {
+            "percent": round(disk.percent, 1),
+            "used_gb": round(disk.used / 1024**3, 1),
+            "total_gb": round(disk.total / 1024**3, 1),
         },
     }

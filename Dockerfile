@@ -15,7 +15,9 @@ RUN pip install --no-cache-dir \
     asyncpg \
     "redis[hiredis]" \
     python-dotenv \
-    aio-pika
+    aio-pika \
+    celery \
+    psutil
 
 # Copier le code
 COPY . .

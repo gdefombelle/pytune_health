@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>PyTune Platform – Status</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+:root {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+body {
+  margin: 0;
+  padding: 2rem 1rem;
+  background: #050712;
+  color: #e5ecff;
+  display: flex;
+  justify-content: center;
+}
+.page { width: 100%; max-width: 960px; }
+
+.card {
+  background: radial-gradient(circle at top left, #18213a, #070916);
+  border-radius: 16px;
+  padding: 1.4rem 1.6rem;
+  border: 1px solid rgba(255,255,255,.06);
+  box-shadow: 0 18px 40px rgba(0,0,0,.45);
+  margin-bottom: 1rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .25rem .7rem;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.badge-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.badge-online { color: #00e08a; background: rgba(0,224,138,.12); }
+.badge-degraded { color: #f7c948; background: rgba(247,201,72,.14); }
+.badge-offline { color: #ff6b81; background: rgba(255,107,129,.16); }
+
+.kpi-row { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: .6rem; }
+.kpi {
+  min-width: 130px;
+  padding: .6rem .9rem;
+  border-radius: 10px;
+  background: rgba(0,0,0,.25);
+  font-size: .8rem;
+}
+.kpi-ok-bg { background: rgba(0,224,138,.15); }
+.kpi-down-bg { background: rgba(255,107,129,.18); }
+
+.kpi-ok { color: #00e08a; }
+.kpi-down { color: #ff6b81; }
+.kpi-disabled { color: #8892b0; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .85rem;
+}
+th, td {
+  padding: .45rem .3rem;
+  text-align: left;
+}
+th {
+  opacity: .6;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+tr + tr td {
+  border-top: 1px solid rgba(255,255,255,.04);
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  font-size: .75rem;
+}
+.chip-ok { color: #00e08a; background: rgba(0,224,138,.1); }
+.chip-fail { color: #ff6b81; background: rgba(255,107,129,.1); }
+
+.footer {
+  margin-top: 1rem;
+  opacity: .55;
+  font-size: .75rem;
+  text-align: right;
+}
+.bar {
+  margin-top: .3rem;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.08);
+  overflow: hidden;
+}
+
+.bar > div {
+  height: 100%;
+  width: 0%;
+  transition: width .4s ease;
+  background: linear-gradient(90deg, #00e08a, #3fffc0);
+}
+
+.bar.warn > div {
+  background: linear-gradient(90deg, #f7c948, #ffd166);
+}
+
+.bar.crit > div {
+  background: linear-gradient(90deg, #ff6b81, #ff3b5c);
+}
+
+</style>
+</head>
+
+<body>
+<div class="page">
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h2>Infrastructure</h2>
+    <div id="global-badge" class="badge badge-offline">
+      <span class="badge-dot"></span>
+      <span id="global-status-text">UNKNOWN</span>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi">Redis<br><b id="kpi-redis">–</b></div>
+    <div class="kpi">Postgres<br><b id="kpi-postgres">–</b></div>
+    <div class="kpi">RabbitMQ<br><b id="kpi-rabbit">–</b></div>
+    <div class="kpi">Qdrant<br><b id="kpi-qdrant">–</b></div>
+    <div class="kpi">MinIO<br><b id="kpi-minio">–</b></div>
+    <div class="kpi">Ollama<br><b id="kpi-ollama">–</b></div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Workers</h3>
+  <div class="kpi-row">
+    <div class="kpi">Email Worker<br><b id="kpi-email-worker">–</b></div>
+    <div class="kpi">Piano Worker<br><b id="kpi-piano-worker">–</b></div>
+  </div>
+</div>
+<div class="card">
+  <h3>System</h3>
+  <div class="kpi-row">
+  <div class="kpi">
+    Host<br>
+    <b id="sys-host">–</b>
+  </div>
+  <div class="kpi">
+    Load 1m<br>
+    <b id="sys-load-1">–</b>
+  </div>
+  <div class="kpi">
+    Load 5m<br>
+    <b id="sys-load-5">–</b>
+  </div>
+  <div class="kpi">
+    Load 15m<br>
+    <b id="sys-load-15">–</b>
+  </div>
+</div>
+  <div class="kpi-row">
+    <div class="kpi">
+      CPU<br>
+      <div class="bar"><div id="bar-cpu"></div></div>
+      <small id="txt-cpu">–</small>
+    </div>
+    <div class="kpi">
+      RAM<br>
+      <div class="bar"><div id="bar-ram"></div></div>
+      <small id="txt-ram">–</small>
+    </div>
+    <div class="kpi">
+      Disk<br>
+      <div class="bar"><div id="bar-disk"></div></div>
+      <small id="txt-disk">–</small>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>Service</th><th>Status</th><th>HTTP</th><th>RTT (ms)</th></tr>
+    </thead>
+    <tbody id="services-body">
+      <tr><td colspan="4">Loading…</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">health.pytune.com</div>
+</div>
+
+<script>
+function setGlobal(status) {
+  const b = document.getElementById('global-badge');
+  const t = document.getElementById('global-status-text');
+  b.className = 'badge badge-' + status;
+  t.textContent = status.toUpperCase();
+}
+
+function setInfra(id, ok) {
+  const el = document.getElementById(id);
+  const card = el.closest('.kpi');
+  el.textContent = ok ? 'OK' : 'DOWN';
+  el.className = ok ? 'kpi-ok' : 'kpi-down';
+  card.classList.remove('kpi-ok-bg','kpi-down-bg');
+  card.classList.add(ok ? 'kpi-ok-bg' : 'kpi-down-bg');
+}
+
+function setInfraTri(id, state) {
+  const el = document.getElementById(id);
+  const card = el.closest('.kpi');
+
+  if (state === null) {
+    el.textContent = 'UNKNOWN';
+    el.className = 'kpi-disabled';
+    card.classList.remove('kpi-ok-bg','kpi-down-bg');
+    return;
+  }
+  setInfra(id, state);
+}
+function setBar(id, percent, label, text) {
+  const fill = document.getElementById(id);
+  const bar = fill.parentElement;
+
+  if (typeof percent !== "number" || isNaN(percent)) {
+    fill.style.width = "0%";
+    bar.classList.remove("warn","crit");
+    document.getElementById(label).textContent = "–";
+    return;
+  }
+
+  const p = Math.max(0, Math.min(100, percent));
+  fill.style.width = p + "%";
+
+  bar.classList.remove("warn","crit");
+  if (p > 80) bar.classList.add("crit");
+  else if (p > 60) bar.classList.add("warn");
+
+  document.getElementById(label).textContent = text;
+}
+
+async function refresh() {
+  const r = await fetch('/health', { cache: 'no-store' });
+  const d = await r.json();
+
+  setGlobal(d.status);
+
+  setInfra('kpi-redis', d.redis.ok);
+  setInfra('kpi-postgres', d.postgres.ok);
+  setInfra('kpi-rabbit', d.rabbitmq.ok);
+  setInfra('kpi-qdrant', d.qdrant.ok);
+  setInfra('kpi-minio', d.minio.ok);
+  setInfraTri('kpi-ollama', d.ollama?.ok ?? null);
+  setInfraTri('kpi-email-worker', d.workers.email_worker.ok);
+  setInfraTri('kpi-piano-worker', d.workers.piano_worker?.ok ?? null);
+
+  const tbody = document.getElementById('services-body');
+  tbody.innerHTML = '';
+  for (const [name, s] of Object.entries(d.services)) {
+    tbody.innerHTML += `
+      <tr>
+        <td>${name}</td>
+        <td class="${s.ok ? 'chip-ok' : 'chip-fail'}">${s.ok ? 'OK' : 'DOWN'}</td>
+        <td>${s.status ?? '–'}</td>
+        <td>${s.rtt ?? '–'}</td>
+      </tr>`;
+  }
+  if (d.system) {
+  // --- Meta / load ---
+  document.getElementById('sys-host').textContent =
+    d.system.hostname ?? '–';
+
+  document.getElementById('sys-load-1').textContent =
+    d.system.load?.["1m"] ?? '–';
+
+  document.getElementById('sys-load-5').textContent =
+    d.system.load?.["5m"] ?? '–';
+
+  document.getElementById('sys-load-15').textContent =
+    d.system.load?.["15m"] ?? '–';
+
+  const sys = d.system;
+
+  // --- CPU ---
+  setBar(
+    "bar-cpu",
+    sys.cpu?.percent,
+    "txt-cpu",
+    sys.cpu
+      ? `${sys.cpu.percent}% (${sys.cpu.cores} cores)`
+      : "–"
+  );
+
+  // --- RAM ---
+  setBar(
+    "bar-ram",
+    sys.memory?.percent,
+    "txt-ram",
+    sys.memory
+      ? `${sys.memory.used_gb} / ${sys.memory.total_gb} GB`
+      : "–"
+  );
+
+  // --- Disk ---
+  setBar(
+    "bar-disk",
+    sys.disk?.percent,
+    "txt-disk",
+    sys.disk
+      ? `${sys.disk.used_gb} / ${sys.disk.total_gb} GB`
+      : "–"
+  );
+}
+}
+
+refresh();
+setInterval(refresh, 10000);
+
+</script>
+</body>
+</html>

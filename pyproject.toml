@@ -12,6 +12,8 @@ dependencies = [
     "asyncpg>=0.30.0",
     "python-dotenv>=1.0.1",
     "aio-pika>=9.4.0",
+    "celery",
+    "psutil"
 ]
 
 [tool.uv]

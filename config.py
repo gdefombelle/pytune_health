@@ -40,6 +40,10 @@ MINIO_HOST = os.getenv("MINIO_HOST", "minio")
 MINIO_PORT = int(os.getenv("MINIO_PORT", "9000"))
 MINIO_URL = os.getenv("MINIO_URL") or f"http://{MINIO_HOST}:{MINIO_PORT}"
 
+
+# --------- OLLAMA ------------
+OLLAMA_URL = os.getenv("OLLAMA_URL")  # pas de default
+
 # ---------- Mode Docker ou pas ----------
 DOCKERIZED = os.getenv("DOCKERIZED", "0") == "1"
 
